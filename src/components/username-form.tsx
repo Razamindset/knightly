@@ -1,23 +1,30 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 interface UsernameFormProps {
-  onSubmit: (platform: "chesscom" | "lichess", username: string) => void
+  onSubmit?: (platform: "chesscom" | "lichess", username: string) => void
   initialPlatform?: "chesscom" | "lichess"
   showPlatformSelector?: boolean
 }
 
-export default function UsernameForm({ 
-  onSubmit, 
+export default function UsernameForm({
+  onSubmit,
   initialPlatform = "chesscom",
-  showPlatformSelector = true
+  showPlatformSelector = true,
 }: UsernameFormProps) {
   const [platform, setPlatform] = useState<"chesscom" | "lichess">(initialPlatform)
   const [username, setUsername] = useState("")
   const [error, setError] = useState("")
+
+  // Load usernames from localStorage on mount
+  useEffect(() => {
+    const savedUsername = localStorage.getItem(`${platform}_username`)
+    if (savedUsername) {
+      setUsername(savedUsername)
+    }
+  }, [platform])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,9 +40,15 @@ export default function UsernameForm({
       return
     }
 
+    // Save to localStorage
+    localStorage.setItem(`${platform}_username`, username)
+
+    // Notify parent component if callback provided
+    if (onSubmit) {
+      onSubmit(platform, username)
+    }
+
     setError("")
-    onSubmit(platform, username)
-    setUsername("")
   }
 
   return (

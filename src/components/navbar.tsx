@@ -20,7 +20,7 @@ export default function Navbar() {
 
   return (
     <div
-      className={`flex flex-col bg-[#282a36] border-r border-gray-700 py-6 px-2 ${
+      className={`flex flex-col border-r box-color border-gray-700 py-6 px-2 ${
         isCollapsed ? "w-16" : "w-64"
       } transition-all duration-300 ease-in-out h-screen sticky top-0 justify-between`}
     >
