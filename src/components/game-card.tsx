@@ -1,3 +1,5 @@
+// ! Ai written code handle with intensive care
+
 import { useState } from "react";
 import Link from "next/link";
 import { FaChevronRight } from "react-icons/fa";
@@ -52,7 +54,7 @@ export default function GameCard({
 
         <div className="ml-4 flex items-center space-x-2">
           <Link
-            href={"/review/" + id}
+            href={"/review/" + id+"?platform="+platform}
             className="text-sm rounded-md font-semibold px-3 p-1 transition-colors bg-green-600 hover:bg-green-700"
           >
             Review

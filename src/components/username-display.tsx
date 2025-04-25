@@ -1,3 +1,5 @@
+// ! Ai written code handle with intensive care
+
 "use client"
 
 import type React from "react"

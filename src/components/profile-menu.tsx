@@ -1,3 +1,5 @@
+// ! Ai written code handle with intensive care
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";

@@ -1,3 +1,7 @@
+// ! Ai written code handle with intensive care
+
+"use client"
+
 import Link from "next/link";
 import {
   FaChessKnight,

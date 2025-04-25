@@ -1,3 +1,5 @@
+// ! Ai written code handle with intensive care
+
 import { useState, useEffect } from "react"
 import ChesscomGames from "./chesscom-games"
 import LichessGames from "./lichess-games"

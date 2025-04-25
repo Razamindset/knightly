@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import UsernameForm from "@/components/username-form"
 import GamesTabs from "@/components/games-tabs"
-import Navbar from "@/components/navbar"
 import { FaChessKnight } from "react-icons/fa"
 
 export default function Home() {
@@ -46,10 +45,7 @@ export default function Home() {
   const hasUsernames = usernames.chesscom || usernames.lichess
 
   return (
-    <div className="min-h-screen flex">
-      <Navbar />
-
-      <main className="container mx-auto p-4">
+      <main className="h-full w-full p-4">
         {!hasUsernames ? (
           <div>
             <h1 className="text-3xl font-bold text-center mb-8">Welcome to Chess Review</h1>
@@ -64,6 +60,5 @@ export default function Home() {
           </div>
         )}
       </main>
-    </div>
   )
 }

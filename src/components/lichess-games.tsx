@@ -1,47 +1,11 @@
+// ! Ai written code handle with intensive care
 "use client"
 
 import { useEffect, useState } from "react"
 import GameCard from "./game-card"
 import { FaChevronDown } from "react-icons/fa"
 
-/**
- * Type definitions for Lichess API responses
- */
-interface LichessUser {
-  name: string
-  rating: number
-}
-
-interface LichessPlayer {
-  user: LichessUser | null
-  rating: number
-}
-
-interface LichessGame {
-  id: string
-  rated: boolean
-  variant: string
-  speed: string
-  perf: string
-  createdAt: number
-  lastMoveAt: number
-  status: string
-  players: {
-    white: LichessPlayer
-    black: LichessPlayer
-  }
-  winner: "white" | "black" | null
-  pgn: string
-}
-
-interface LichessGamesProps {
-  username: string
-}
-
-/**
- * Component to fetch and display Lichess games for a user
- */
-export default function LichessGames({ username }: LichessGamesProps) {
+export default function LichessGames({ username }: {username: string}) {
   // State management
   const [games, setGames] = useState<LichessGame[]>([])
   const [loading, setLoading] = useState(true)

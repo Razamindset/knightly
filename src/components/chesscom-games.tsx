@@ -1,63 +1,20 @@
-import { useEffect, useState } from "react"
-import GameCard from "./game-card"
-import { FaChevronDown } from "react-icons/fa"
+import { useEffect, useState } from "react";
+import GameCard from "./game-card";
+import { FaChevronDown } from "react-icons/fa";
 
 /**
  * Type definitions for Chess.com API responses
  */
 interface ChesscomArchivesResponse {
-  archives: string[]
-}
-
-interface ChesscomGameResponse {
-  url: string
-  pgn: string
-  time_class: string
-  time_control: string
-  rated: boolean
-  end_time: number
-  white: {
-    username: string
-    rating: number
-    result: string
-  }
-  black: {
-    username: string
-    rating: number
-    result: string
-  }
-  // Other fields from the API that we're not using
+  archives: string[];
 }
 
 interface ChesscomGamesResponse {
-  games: ChesscomGameResponse[]
-}
-
-/**
- * Our internal game representation
- */
-interface ChesscomGame {
-  id: string
-  url: string
-  time_class: string
-  time_control: string
-  rated: boolean
-  white: {
-    username: string
-    rating: number
-    result: string
-  }
-  black: {
-    username: string
-    rating: number
-    result: string
-  }
-  end_time: number
-  pgn: string
+  games: ChesscomGame[];
 }
 
 interface ChesscomGamesProps {
-  username: string
+  username: string;
 }
 
 /**
@@ -65,69 +22,75 @@ interface ChesscomGamesProps {
  */
 export default function ChesscomGames({ username }: ChesscomGamesProps) {
   // State management
-  const [games, setGames] = useState<ChesscomGame[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [visibleGames, setVisibleGames] = useState(10) // Default to showing 10 games
-  const [hasMore, setHasMore] = useState(false)
-  const [archives, setArchives] = useState<string[]>([])
-  const [currentArchiveIndex, setCurrentArchiveIndex] = useState(0)
+  const [games, setGames] = useState<ChesscomGame[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [visibleGames, setVisibleGames] = useState(10); // Default to showing 10 games
+  const [hasMore, setHasMore] = useState(false);
+  const [archives, setArchives] = useState<string[]>([]);
+  const [currentArchiveIndex, setCurrentArchiveIndex] = useState(0);
 
   /**
    * Fetches archives and the most recent games for the user
    */
   useEffect(() => {
     const fetchGames = async () => {
-      setLoading(true)
-      setError("")
+      setLoading(true);
+      setError("");
 
       try {
         // Step 1: Fetch the list of archives (months) for the user
-        const archivesRes = await fetch(`https://api.chess.com/pub/player/${username}/games/archives`)
+        const archivesRes = await fetch(
+          `https://api.chess.com/pub/player/${username}/games/archives`
+        );
 
         if (!archivesRes.ok) {
-          throw new Error(`Failed to fetch archives: ${archivesRes.statusText}`)
+          throw new Error(
+            `Failed to fetch archives: ${archivesRes.statusText}`
+          );
         }
 
-        const archivesData: ChesscomArchivesResponse = await archivesRes.json()
+        const archivesData: ChesscomArchivesResponse = await archivesRes.json();
 
         if (!archivesData.archives || archivesData.archives.length === 0) {
-          setGames([])
-          setLoading(false)
-          return
+          setGames([]);
+          setLoading(false);
+          return;
         }
 
         // Store all archives and set the current index to the most recent one
-        const sortedArchives = [...archivesData.archives].sort((a, b) => b.localeCompare(a))
-        setArchives(sortedArchives)
-        setCurrentArchiveIndex(0)
+        const sortedArchives = [...archivesData.archives].sort((a, b) =>
+          b.localeCompare(a)
+        );
+        setArchives(sortedArchives);
+        setCurrentArchiveIndex(0);
 
         // Step 2: Fetch games from the latest archive (most recent month)
-        await loadGamesFromArchive(sortedArchives[0])
+        await loadGamesFromArchive(sortedArchives[0]);
       } catch (err) {
-        console.error("Error fetching Chess.com games:", err)
-        setError("Failed to load games. Please try again later.")
-        setLoading(false)
+        console.error("Error fetching Chess.com games:", err);
+        setError("Failed to load games. Please try again later.");
+        setLoading(false);
       }
-    }
+    };
 
-    fetchGames()
-  }, [username])
+    fetchGames();
+  }, [username]);
 
   /**
    * Loads games from a specific archive URL
    */
   const loadGamesFromArchive = async (archiveUrl: string) => {
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const gamesRes = await fetch(archiveUrl)
+      const gamesRes = await fetch(archiveUrl);
 
       if (!gamesRes.ok) {
-        throw new Error(`Failed to fetch games: ${gamesRes.statusText}`)
+        throw new Error(`Failed to fetch games: ${gamesRes.statusText}`);
       }
 
-      const gamesData: ChesscomGamesResponse = await gamesRes.json()
+      const gamesData: ChesscomGamesResponse = await gamesRes.json();
 
       // Map the API response to our internal format
       const mappedGames: ChesscomGame[] = gamesData.games.map((game) => ({
@@ -148,20 +111,23 @@ export default function ChesscomGames({ username }: ChesscomGamesProps) {
         },
         end_time: game.end_time * 1000, // convert to ms
         pgn: game.pgn,
-      }))
+      }));
 
       // Sort games by date (newest first)
-      mappedGames.sort((a, b) => b.end_time - a.end_time)
+      mappedGames.sort((a, b) => b.end_time - a.end_time);
 
-      setGames(mappedGames)
-      setHasMore(currentArchiveIndex < archives.length - 1 || mappedGames.length > visibleGames)
+      setGames(mappedGames);
+      setHasMore(
+        currentArchiveIndex < archives.length - 1 ||
+          mappedGames.length > visibleGames
+      );
     } catch (err) {
-      console.error("Error loading games from archive:", err)
-      setError("Failed to load games from this time period.")
+      console.error("Error loading games from archive:", err);
+      setError("Failed to load games from this time period.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   /**
    * Loads more games, either by showing more from the current archive
@@ -170,17 +136,17 @@ export default function ChesscomGames({ username }: ChesscomGamesProps) {
   const handleLoadMore = async () => {
     // If we haven't shown all games from the current archive yet
     if (visibleGames < games.length) {
-      setVisibleGames((prev) => prev + 10)
-      return
+      setVisibleGames((prev) => prev + 10);
+      return;
     }
 
     // If we've shown all games from the current archive, load the next one
     if (currentArchiveIndex < archives.length - 1) {
-      const nextIndex = currentArchiveIndex + 1
-      setCurrentArchiveIndex(nextIndex)
-      await loadGamesFromArchive(archives[nextIndex])
+      const nextIndex = currentArchiveIndex + 1;
+      setCurrentArchiveIndex(nextIndex);
+      await loadGamesFromArchive(archives[nextIndex]);
     }
-  }
+  };
 
   /**
    * Renders loading skeleton UI
@@ -200,7 +166,7 @@ export default function ChesscomGames({ username }: ChesscomGamesProps) {
         </div>
       ))}
     </div>
-  )
+  );
 
   /**
    * Renders error state UI
@@ -215,7 +181,7 @@ export default function ChesscomGames({ username }: ChesscomGamesProps) {
         Retry
       </button>
     </div>
-  )
+  );
 
   /**
    * Renders empty state UI
@@ -224,7 +190,7 @@ export default function ChesscomGames({ username }: ChesscomGamesProps) {
     <div className="text-center py-12">
       <p className="text-gray-400">No games found for this user.</p>
     </div>
-  )
+  );
 
   /**
    * Renders the list of games
@@ -240,12 +206,13 @@ export default function ChesscomGames({ username }: ChesscomGamesProps) {
             white={game.white.username}
             black={game.black.username}
             result={
-              game.white.username.toLowerCase() === username.toLowerCase() ? game.white.result : game.black.result
+              game.white.username.toLowerCase() === username.toLowerCase()
+                ? game.white.result
+                : game.black.result
             }
             date={new Date(game.end_time).toLocaleDateString()}
             timeControl={game.time_control}
             timeClass={game.time_class}
-     
           />
         ))}
       </div>
@@ -261,7 +228,7 @@ export default function ChesscomGames({ username }: ChesscomGamesProps) {
         </div>
       )}
     </>
-  )
+  );
 
   return (
     <div>
@@ -272,5 +239,5 @@ export default function ChesscomGames({ username }: ChesscomGamesProps) {
       {!loading && !error && games.length === 0 && renderEmptyState()}
       {!loading && !error && games.length > 0 && renderGames()}
     </div>
-  )
+  );
 }
