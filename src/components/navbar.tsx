@@ -1,103 +1,176 @@
-// ! Ai written code handle with intensive care
-
-"use client"
+"use client";
 
 import Link from "next/link";
-import {
-  FaChessKnight,
-  FaGithub,
-  FaChevronLeft,
-  FaChevronRight,
-  FaUser,
-} from "react-icons/fa";
-import { FaCircleUser, FaRegChessKnight } from "react-icons/fa6";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { FaChessKnight, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaCircleUser } from "react-icons/fa6";
 import { FcAbout } from "react-icons/fc";
 import { SiGithub } from "react-icons/si";
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "./ui/toggle-theme";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  external?: boolean;
+};
 
 export default function Navbar() {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const pathname = usePathname();
+
+  // Check if we're on mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setIsCollapsed(true);
+      } else {
+        setIsCollapsed(false); // Ensure it's not collapsed on desktop by default
+      }
+    };
+
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+    return () => window.removeEventListener("resize", checkIfMobile);
+  }, []);
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  const navItems: NavItem[] = [
+    {
+      href: "/",
+      label: "Home",
+      icon: <FaChessKnight size={24} className="text-primary" />,
+    },
+    {
+      href: "/profile",
+      label: "Profile",
+      icon: <FaCircleUser size={24} />,
+    },
+    {
+      href: "https://github.com/Razamindset/knightly",
+      label: "GitHub",
+      icon: <SiGithub size={24} />,
+      external: true,
+    },
+    {
+      href: "/about",
+      label: "About",
+      icon: <FcAbout size={24} />,
+    },
+  ];
+
+  const NavLinks = ({ showLabel = true }: { showLabel?: boolean }) => (
+    <>
+      {navItems.map((item) => {
+        const isActive = pathname === item.href;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            target={item.external ? "_blank" : undefined}
+            rel={item.external ? "noopener noreferrer" : undefined}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+              isCollapsed && !isMobile ? "justify-center" : "",
+              isActive
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            )}
+          >
+            <div className="flex-shrink-0">{item.icon}</div>
+            {(showLabel && !isCollapsed) || isMobile ? (
+              <span className="font-medium">{item.label}</span>
+            ) : null}
+          </Link>
+        );
+      })}
+    </>
+  );
+
+  // Mobile bottom navigation
+  if (isMobile) {
+    return (
+      <>
+        {/* Mobile sidebar drawer */}
+        <Sheet>
+          <SheetTitle className="hidden">Knightly</SheetTitle>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="fixed top-4 left-4 z-50 md:hidden"
+            >
+              <Menu />
+              <span className="sr-only">Menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-[240px] p-0">
+            <div className="flex flex-col h-full py-10">
+              <div className="flex flex-col gap-2 px-3 flex-1">
+                <NavLinks showLabel={true} /> {/* Ensure labels are shown on mobile */}
+              </div>
+
+              <div className="px-3 mt-auto pt-6 border-t border-border/30">
+                <ModeToggle />
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </>
+    );
+  }
+
+  // Desktop sidebar
   return (
     <div
-      className={`flex flex-col border-r box-color border-gray-700 py-6 px-2 ${
+      className={cn(
+        "flex flex-col border-r py-6 transition-all duration-300 ease-in-out h-screen sticky top-0 bg-card/50 backdrop-blur-sm",
         isCollapsed ? "w-16" : "w-64"
-      } transition-all duration-300 ease-in-out h-screen sticky top-0 justify-between`}
+      )}
     >
-      <div>
-        {/* Logo */}
-        <div className="flex justify-center items-center mb-6">
-          <Link
-            href="/"
-            className={`flex items-center ${
-              isCollapsed ? "justify-center" : "gap-2"
-            }`}
-          >
-            <FaChessKnight size={30} className="text-green-500"/>
-            {!isCollapsed && (
-              <span className="text-white font-bold text-xl w-max">
-                Knight Review
-              </span>
-            )}
-          </Link>
-        </div>
-
+      <div className="flex-1">
         {/* Navigation Links */}
-        <div className="flex flex-col gap-3">
-          <Link
-            href="/profile"
-            className={`hover:text-gray-300 text-sm font-medium flex items-center gap-2 px-2 py-1 rounded-md ${
-              isCollapsed ? "justify-center" : ""
-            }`}
-          >
-            <FaCircleUser size={30} />
-            {!isCollapsed && <span>Profile</span>}
-          </Link>
-
-          <Link
-            href="https://github.com/yourusername/chess-review"
-            target="_blank"
-            className={`hover:text-gray-300 text-sm font-medium flex items-center gap-2 px-2 py-1 rounded-md ${
-              isCollapsed ? "justify-center" : ""
-            }`}
-          >
-            <SiGithub size={30} />
-            {!isCollapsed && <span>GitHub</span>}
-          </Link>
-
-          <Link
-            href="/about"
-            className={`text-gray-300 hover:text-white text-sm font-medium flex items-center gap-2 px-2 py-1 rounded-md ${
-              isCollapsed ? "justify-center" : ""
-            }`}
-          >
-            <FcAbout size={30} />
-            {!isCollapsed && <span>About</span>}
-          </Link>
+        <div className="flex flex-col gap-1 px-2">
+          <NavLinks showLabel={!isCollapsed} />
         </div>
       </div>
 
-      <button
-        onClick={toggleCollapse}
-        className="text-gray-300 hover:text-white focus:outline-none mb-4"
-      >
-        <div
-          className={`flex items-center justify-center p-2 rounded-md hover:bg-gray-700 transition-transform duration-200`}
-        >
-          {isCollapsed ? (
-            <FaChevronRight size={20} />
-          ) : (
-            <>
-              <FaChevronLeft size={20} />
-              <span className="ml-2">Collapse</span>
-            </>
-          )}
+      {/* Footer */}
+      <div className="mt-auto px-2">
+        <div className="flex flex-col items-center justify-between gap-2 pt-4 border-t border-border/30 mx-2">
+          <div className="flex items-center gap-3">
+            <ModeToggle />
+            {!isCollapsed && "Theme"}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={toggleCollapse}
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground border"
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isCollapsed ? (
+                <FaChevronRight size={16} />
+              ) : (
+                <FaChevronLeft size={16} />
+              )}
+            </Button>
+            {!isCollapsed && "Collapse"}
+          </div>
         </div>
-      </button>
+      </div>
     </div>
   );
 }
