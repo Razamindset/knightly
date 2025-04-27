@@ -1,5 +1,4 @@
 "use client";
-
 import {
   fetchLichessGameData,
   fetchLichessGameId,
@@ -10,15 +9,16 @@ import { useGameStore } from "@/utils/store";
 import { Chess } from "chess.js";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
+import ReviewGame from "./Review";
 
 export default function ReviewPage() {
   const { gameData } = useGameStore();
-  const [gamePgn, setGamePgn] = useState<string | null>(null);
   const [whiteUserData, setWhiteUserData] = useState<any | null>(null);
   const [blackUserData, setBlackUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [postions, setPositions] = useState<any[] | null>(null);
+  const [positions, setPositions] = useState<any[] | null>(null);
+  const [wasGameOver, setWasGameOver] = useState(false);
 
   if (!gameData?.value) {
     notFound();
@@ -30,7 +30,6 @@ export default function ReviewPage() {
       //* Initialize the states
       setLoading(true);
       setFetchError(null);
-      setGamePgn(null);
       setWhiteUserData(null);
       setBlackUserData(null);
 
@@ -45,7 +44,6 @@ export default function ReviewPage() {
           const data = await fetchLichessGameData(gameId);
 
           if (data) {
-            setGamePgn(data);
             currentPgn = data;
             // Extract user IDs from PGN (very basic approach, might need more robust parsing)
             const whiteMatch = data.match(/\[White "([^"]*)"\]/);
@@ -80,7 +78,6 @@ export default function ReviewPage() {
           setFetchError("Invalid game URL.");
         }
       } else if (gameData.type === "pgn") {
-        setGamePgn(gameData.value);
         currentPgn = gameData.value ?? "";
       }
 
@@ -99,6 +96,9 @@ export default function ReviewPage() {
 
           // For now we don't know what feilds we need for future so we will store all of them
           setPositions(historyWithInitial);
+          if (chess.isGameOver()) {
+            setWasGameOver(true);
+          }
         } catch (error) {
           console.error("Error loading PGN:", error);
           setFetchError("Invalid PGN format.");
@@ -112,12 +112,13 @@ export default function ReviewPage() {
     loadGameData();
   }, [gameData]);
 
-  console.log(postions);
-
+  if (loading) {
+    return <div>Loading</div>;
+  }
   return (
     <div className="h-full w-full p-4">
       <h1 className="text-3xl font-bold mb-8">Game Review</h1>
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+      {/* <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
         <h2 className="text-xl font-semibold mb-4">Game Data</h2>
         {loading ? (
           <p className="text-gray-400">Loading game data...</p>
@@ -159,7 +160,15 @@ export default function ReviewPage() {
         ) : (
           <p className="text-gray-400">No game data available.</p>
         )}
-      </div>
+      </div> */}
+
+      <ReviewGame
+        positions={positions ?? []}
+        gameOver={wasGameOver}
+        whiteUserData={whiteUserData}
+        blackUserData={blackUserData}
+      />
+      {fetchError && fetchError}
     </div>
   );
 }
