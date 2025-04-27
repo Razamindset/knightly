@@ -10,14 +10,15 @@ import { Chess } from "chess.js";
 import { notFound } from "next/navigation";
 import { useEffect, useState } from "react";
 import ReviewGame from "./Review";
+import { Position, UserData } from "@/types/api";
 
 export default function ReviewPage() {
   const { gameData } = useGameStore();
-  const [whiteUserData, setWhiteUserData] = useState<any | null>(null);
-  const [blackUserData, setBlackUserData] = useState<any | null>(null);
+  const [whiteUserData, setWhiteUserData] = useState<UserData | null>(null);
+  const [blackUserData, setBlackUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [positions, setPositions] = useState<any[] | null>(null);
+  const [positions, setPositions] = useState<Position[] | null>(null);
   const [wasGameOver, setWasGameOver] = useState(false);
 
   if (!gameData?.value) {
@@ -79,6 +80,21 @@ export default function ReviewPage() {
         }
       } else if (gameData.type === "pgn") {
         currentPgn = gameData.value ?? "";
+        const whiteMatch = currentPgn.match(/\[White "([^"]*)"\]/);
+        const blackMatch = currentPgn.match(/\[Black "([^"]*)"\]/);
+
+        if (whiteMatch) {
+          setWhiteUserData({
+            username: whiteMatch[1],
+            flag: "UN",
+          });
+        }
+        if (blackMatch) {
+          setBlackUserData({
+            username: blackMatch[1],
+            flag: "UN",
+          });
+        }
       }
 
       if (currentPgn) {
@@ -115,58 +131,20 @@ export default function ReviewPage() {
   if (loading) {
     return <div>Loading</div>;
   }
-  return (
-    <div className="h-full w-full p-4">
-      <h1 className="text-3xl font-bold mb-8">Game Review</h1>
-      {/* <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">Game Data</h2>
-        {loading ? (
-          <p className="text-gray-400">Loading game data...</p>
-        ) : fetchError ? (
-          <p className="text-red-500">{fetchError}</p>
-        ) : gamePgn ? (
-          <div>
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-300 mb-2">
-                Game PGN
-              </h3>
-              <pre className="bg-gray-900 p-4 rounded-md overflow-auto max-h-[600px] text-sm mt-2">
-                {gamePgn}
-              </pre>
-            </div>
-            {whiteUserData && (
-              <div className="mb-2">
-                <span className="font-semibold text-gray-300">White:</span>{" "}
-                <span className="text-gray-400">{whiteUserData.username}</span>{" "}
-                {whiteUserData.rating && (
-                  <span className="text-gray-500">
-                    ({whiteUserData.rating})
-                  </span>
-                )}
-              </div>
-            )}
-            {blackUserData && (
-              <div>
-                <span className="font-semibold text-gray-300">Black:</span>{" "}
-                <span className="text-gray-400">{blackUserData.username}</span>{" "}
-                {blackUserData.rating && (
-                  <span className="text-gray-500">
-                    ({blackUserData.rating})
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        ) : (
-          <p className="text-gray-400">No game data available.</p>
-        )}
-      </div> */}
 
+  const placeholderUser = {
+    flag: "UN",
+    username: "Username",
+    rating: "?"
+  };
+
+  return (
+    <div className="h-full w-full">
       <ReviewGame
         positions={positions ?? []}
         gameOver={wasGameOver}
-        whiteUserData={whiteUserData}
-        blackUserData={blackUserData}
+        whiteUserData={whiteUserData ?? placeholderUser}
+        blackUserData={blackUserData ?? placeholderUser}
       />
       {fetchError && fetchError}
     </div>

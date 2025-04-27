@@ -1,43 +1,54 @@
+import { Line } from "@/utils/engine-new";
 
-interface ChesscomGame {
-    id: string
-    url: string
-    time_class: string
-    time_control: string
-    rated: boolean
-    white: {
-      username: string
-      rating: number
-      result: string
-    }
-    black: {
-      username: string
-      rating: number
-      result: string
-    }
-    end_time: number
-    pgn: string
-  }
+interface UserData {
+  username?: string;
+  flag?: string;
+  avatar?: string;
+  rating?: string | "?"
+}
 
-interface LichessGame {
-  id: string;
-  rated: boolean;
-  variant: string;
-  speed: string;
-  perf: string;
-  createdAt: number;
-  lastMoveAt: number;
-  status: string;
-  players: {
-    white: {
-      user: { name: string; rating: number } | null;
-      rating: number;
-    };
-    black: {
-      user: { name: string; rating: number } | null;
-      rating: number;
-    };
+interface Position {
+  opening?: string;
+  san?: string;
+  lan?: string;
+  after?: string;
+}
+
+export enum Classification {
+  BRILLIANT = "brilliant",
+  GREAT = "great",
+  BEST = "best",
+  EXCELLENT = "excellent",
+  GOOD = "good",
+  INACCURACY = "inaccuracy",
+  MISTAKE = "mistake",
+  BLUNDER = "blunder",
+  BOOK = "book",
+  FORCED = "forced",
+}
+
+interface EvaluatedMove {
+  san?: string;
+  uci?: string;
+}
+
+export interface EvaluatedPosition extends Position {
+  move: EvaluatedMove;
+  fen?: string;
+  topLines: Line[];
+  classification?: Classification;
+  opening?: string;
+  worker: string;
+}
+
+interface Report {
+  accuracies: {
+    white: number;
+    black: number;
   };
-  winner: "white" | "black" | null;
-  pgn: string;
+  classifications: {
+    white: Record<Classification, number>;
+    black: Record<Classification, number>;
+  };
+  positions: EvaluatedPosition[];
 }

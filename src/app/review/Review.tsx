@@ -1,5 +1,9 @@
+import { EvaluatedPosition, Position, Report, UserData } from "@/types/api";
 import { Stockfish } from "@/utils/engine-new";
 import { useEffect, useRef, useState } from "react";
+import ReactCountryFlag from "react-country-flag";
+import ReviewLoading from "./ReviewLoading";
+
 /*
 Loops over each positions to get its evaluation
 shows a loading state until the evaluation is complete
@@ -11,12 +15,12 @@ export default function ReviewGame({
   whiteUserData,
   blackUserData,
 }: {
-  positions: any[];
+  positions: Position[];
   gameOver: boolean;
-  blackUserData: any;
-  whiteUserData: any;
+  blackUserData: UserData;
+  whiteUserData: UserData;
 }) {
-  const [report, setReport] = useState<any | null>(null);
+  const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [progress, setProgress] = useState<number>(0);
 
@@ -34,7 +38,7 @@ export default function ReviewGame({
     };
   }, []);
 
-  async function fetchReport(allEvaluations: any[]) {
+  async function fetchReport(allEvaluations: EvaluatedPosition[]) {
     console.log("This function was called");
 
     // Now we need to call the external api and get the game report
@@ -55,8 +59,8 @@ export default function ReviewGame({
       }
 
       const gameReport = await response.json();
-      setReport(gameReport.report);
-    } catch (error: any) {
+      setReport(gameReport.report.results);
+    } catch (error) {
       console.error("Error during analysis or API call:", error);
     }
   }
@@ -70,24 +74,23 @@ export default function ReviewGame({
       }
 
       const totalMoves = positions.length;
-      const calculatedEvaluations = [];
+      const calculatedEvaluations: EvaluatedPosition[] = [];
 
       for (let i = 0; i < totalMoves; i++) {
         setProgress(Math.round(((i + 1) / totalMoves) * 100));
         const currentFen = positions[i].after;
 
         // If it's the last move and the game is over, add a placeholder evaluation
-        if (gameOver && i + 1 === totalMoves) {
+        if ((gameOver && i + 1 === totalMoves) || !currentFen) {
           calculatedEvaluations.push({
             move: { san: positions[i].san, uci: positions[i].lan },
             fen: currentFen,
             worker: "local",
-            topLines: [], // Or some other placeholder value
+            topLines: [],
           });
           continue; // Skip the Stockfish evaluation
         }
 
-        // console.log("Evaluating fen", currentFen);
         try {
           const evaluation = await stockfish?.current?.evaluate(currentFen, 16);
           if (evaluation) {
@@ -109,8 +112,8 @@ export default function ReviewGame({
           });
         }
       }
-      setLoading(false);
       await fetchReport(calculatedEvaluations); // Call fetchReport once
+      setLoading(false);
     };
 
     if (positions) {
@@ -119,10 +122,28 @@ export default function ReviewGame({
     }
   }, [positions, gameOver]);
 
+  if (loading) {
+    return (
+      <ReviewLoading
+        blackUser={blackUserData}
+        progress={progress}
+        whiteUser={whiteUserData}
+      />
+    );
+  }
+
   return (
     <div className="border w-full p-6">
-      Progress: {progress}%
-      <div>{JSON.stringify(report && report.results.classifications)}</div>
+      <span>Progress: {progress}%</span>
+      <div>{JSON.stringify(report && report.classifications)}</div>
+      <div className="white">
+        {whiteUserData?.username}{" "}
+        <ReactCountryFlag countryCode={whiteUserData?.flag ?? "UN"} />
+      </div>
+      <div className="black">
+        {blackUserData?.username}{" "}
+        <ReactCountryFlag countryCode={blackUserData?.flag ?? "UN"} />
+      </div>
     </div>
   );
 }

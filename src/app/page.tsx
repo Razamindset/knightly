@@ -111,7 +111,7 @@ export default function Home() {
         </div>
 
         <Tabs
-          defaultValue="url"
+          defaultValue="pgn"
           className="w-full"
           onValueChange={(value) => {
             setInputType(value as "url" | "pgn");

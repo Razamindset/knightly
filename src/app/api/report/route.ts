@@ -1,8 +1,9 @@
+import { EvaluatedPosition } from "@/types/api";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const evaluations = await request.json();
+    const evaluations: EvaluatedPosition[] = await request.json();
 
     // Validate the evaluation data
     if (!evaluations) {

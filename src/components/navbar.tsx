@@ -21,7 +21,7 @@ type NavItem = {
 };
 
 export default function Navbar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
 
