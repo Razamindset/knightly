@@ -14,14 +14,14 @@ import { useGameStore } from "@/utils/store";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
-  const [inputValue, setInputValue] = useState("");
+  const [urlInputValue, setUrlInputValue] = useState("");
+  const [pgnInputValue, setPgnInputValue] = useState("");
   const [inputType, setInputType] = useState<"url" | "pgn">("url");
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { setGameData } = useGameStore();
 
-  // Add validation functions
   const validateChesscomUrl = (url: string): boolean => {
     return /^https?:\/\/(www\.)?chess\.com\/game\/(live|daily)\/\d+/.test(url);
   };
@@ -46,34 +46,34 @@ export default function Home() {
     setError(null);
     setLoading(true);
 
-    try {
-      // Validate input based on type
-      if (inputType === "url") {
-        if (
-          !validateChesscomUrl(inputValue) &&
-          !validateLichessUrl(inputValue)
-        ) {
-          setError(
-            "Invalid URL. Please enter a valid Chess.com or Lichess game URL."
-          );
-          setLoading(false);
-          return;
-        }
-      } else {
-        if (!validatePgn(inputValue)) {
-          setError("Invalid PGN format. Please check your PGN and try again.");
-          setLoading(false);
-          return;
-        }
+    let inputValueToSubmit = "";
+    if (inputType === "url") {
+      if (
+        !validateChesscomUrl(urlInputValue) &&
+        !validateLichessUrl(urlInputValue)
+      ) {
+        setError(
+          "Invalid URL. Please enter a valid Chess.com or Lichess game URL."
+        );
+        setLoading(false);
+        return;
       }
+      inputValueToSubmit = urlInputValue;
+    } else {
+      if (!validatePgn(pgnInputValue)) {
+        setError("Invalid PGN format. Please check your PGN and try again.");
+        setLoading(false);
+        return;
+      }
+      inputValueToSubmit = pgnInputValue;
+    }
 
-      // Store the game data in Zustand store
+    try {
       setGameData({
         type: inputType,
-        value: inputValue,
+        value: inputValueToSubmit,
       });
 
-      // Navigate to the analysis page
       router.push("/review");
     } catch (error) {
       console.error("Error processing game data:", error);
@@ -92,7 +92,7 @@ export default function Home() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const pgn = event.target?.result as string;
-      setInputValue(pgn);
+      setPgnInputValue(pgn);
       setInputType("pgn");
       setError(null);
     };
@@ -100,12 +100,12 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 max-w-xl mx-auto">
-      <div className="w-full space-y-8">
+    <main className="flex flex-col justify-center p-6 sm:p-8 md:p-10 lg:p-12 max-w-xl mx-auto w-full h-full">
+      <div className="space-y-8 w-full h-full">
         <div className="text-center space-y-4">
           <FaChessKnight size={50} className="text-green-500 mx-auto" />
-          <h1 className="text-4xl font-bold">Chess Review</h1>
-          <p className="text-gray-400">
+          <h1 className="text-3xl sm:text-4xl font-bold">Chess Review</h1>
+          <p className="text-gray-500 sm:text-gray-400">
             Analyze chess games from Lichess, Chess.com, or PGN files
           </p>
         </div>
@@ -115,53 +115,54 @@ export default function Home() {
           className="w-full"
           onValueChange={(value) => {
             setInputType(value as "url" | "pgn");
-            setInputValue("");
             setError(null);
           }}
         >
           <TabsList className="grid grid-cols-2 mb-4 cursor-pointer">
-            <TabsTrigger value="url" className="cursor-pointer">
+            <TabsTrigger value="url" className="cursor-pointer text-sm sm:text-base">
               Game URL
             </TabsTrigger>
-            <TabsTrigger value="pgn" className="cursor-pointer">
+            <TabsTrigger value="pgn" className="cursor-pointer text-sm sm:text-base">
               PGN
             </TabsTrigger>
           </TabsList>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <TabsContent value="url" className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 w-full">
+            <TabsContent value="url" className="space-y-4 w-full">
               <Input
                 placeholder="Paste a Lichess or Chess.com game URL"
-                value={inputValue}
+                value={urlInputValue}
                 onChange={(e) => {
-                  setInputValue(e.target.value);
+                  setUrlInputValue(e.target.value);
                   setError(null);
                 }}
                 className="w-full"
               />
-              <div className="text-xs text-gray-400">
+              <div className="text-xs text-gray-500 sm:text-gray-400">
                 Example: https://lichess.org/xxxxx or
                 https://chess.com/game/live/xxxxx
               </div>
             </TabsContent>
 
-            <TabsContent value="pgn" className="space-y-4">
-              <Textarea
-                placeholder="Paste PGN text here"
-                value={inputValue}
-                onChange={(e) => {
-                  setInputValue(e.target.value);
-                  setError(null);
-                }}
-                className="w-full min-h-[150px]"
-              />
+            <TabsContent value="pgn" className="space-y-4 w-full">
+              <div className="w-full">
+                <Textarea
+                  placeholder="Paste PGN text here"
+                  value={pgnInputValue}
+                  onChange={(e) => {
+                    setPgnInputValue(e.target.value);
+                    setError(null);
+                  }}
+                  className="h-[150px] sm:h-[200px] w-full resize-none"
+                />
+              </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">Or</span>
+                <span className="text-sm text-gray-500 sm:text-gray-400">Or</span>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 cursor-pointer"
+                  className="flex items-center gap-2 cursor-pointer text-sm sm:text-base"
                 >
                   <FaUpload size={14} />
                   Upload PGN file
@@ -184,8 +185,12 @@ export default function Home() {
 
             <Button
               type="submit"
-              className="w-full cursor-pointer"
-              disabled={!inputValue.trim() || loading}
+              className="w-full cursor-pointer text-sm sm:text-base"
+              disabled={
+                (inputType === "url" && !urlInputValue.trim()) ||
+                (inputType === "pgn" && !pgnInputValue.trim()) ||
+                loading
+              }
             >
               {loading ? "Processing..." : "Analyze Game"}
             </Button>

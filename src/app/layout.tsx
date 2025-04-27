@@ -37,7 +37,7 @@ export default function RootLayout({
         >
           <div className="h-screen flex">
             <Navbar />
-            <div className="flex flex-1 items-center justify-center">
+            <div className="flex flex-1 items-center justify-center overflow-y-auto">
               {children}
             </div>
           </div>
