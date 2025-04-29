@@ -16,7 +16,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [urlInputValue, setUrlInputValue] = useState("");
   const [pgnInputValue, setPgnInputValue] = useState("");
-  const [inputType, setInputType] = useState<"url" | "pgn">("url");
+  const [inputType, setInputType] = useState<"url" | "pgn">("pgn");
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
