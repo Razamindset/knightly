@@ -61,6 +61,7 @@ export default function ReviewAnalysis({
       const gameReport = await response.json();
       const result = gameReport.report.results;
       setReport(result);
+      stockfish.current?.terminate();
     } catch (error) {
       console.error("Error during analysis or API call:", error);
     }
@@ -130,5 +131,5 @@ export default function ReviewAnalysis({
     return <StockfishLoader />;
   }
 
-  return <ReviewReport progress={progress} loading={loading} report={report} />;
+  return <ReviewReport progress={progress} loading={loading} report={report} initialFen={positions[0].after} />;
 }

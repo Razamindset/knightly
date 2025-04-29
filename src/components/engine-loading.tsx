@@ -1,4 +1,4 @@
-import { Loader2, BrainCircuit } from "lucide-react";
+import { BrainCircuit } from "lucide-react";
 import { motion } from "framer-motion";
 import { FaSpinner } from "react-icons/fa";
 

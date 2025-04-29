@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./ui/toggle-theme";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import { MdMenu } from "react-icons/md";
 
 type NavItem = {
   href: string;
@@ -110,8 +110,7 @@ export default function Navbar() {
               size="icon"
               className="fixed top-4 left-4 z-50 md:hidden"
             >
-              <Menu />
-              <span className="sr-only">Menu</span>
+              <MdMenu size={40}/>
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-[240px] p-0">

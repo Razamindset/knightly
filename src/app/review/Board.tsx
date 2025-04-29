@@ -2,10 +2,10 @@ import React, { useState, useRef } from "react";
 import {
   classificationIcons,
   pieceSymbols,
-  Classification,
   ClassificationConfig,
 } from "./board-icons";
 import { FiRefreshCw } from "react-icons/fi";
+import Image from "next/image";
 
 interface Move {
   from: string;
@@ -22,14 +22,12 @@ interface BoardProps {
 const Board: React.FC<BoardProps> = ({
   fen,
   lastMove,
-  moveClassification, // Using the meaningful name
+  moveClassification,
   boardSize = 500,
 }) => {
   const [orientation, setOrientation] = useState("white");
   const boardRef = useRef(null);
   const squareSize = boardSize / 8;
-
-  console.log(fen, lastMove, moveClassification);
 
   const flipBoard = () => {
     setOrientation(orientation === "white" ? "black" : "white");
@@ -52,18 +50,9 @@ const Board: React.FC<BoardProps> = ({
     const rows = fen.split(" ")[0].split("/");
     const row = Math.floor(squareIndex / 8);
     const col = squareIndex % 8;
-    let pieceIndex = 0;
-    for (let i = 0; i < row; i++) {
-      for (let char of rows[i]) {
-        if (isNaN(parseInt(char))) {
-          pieceIndex++;
-        } else {
-          pieceIndex += parseInt(char);
-        }
-      }
-    }
+
     let pieceCounter = 0;
-    for (let char of rows[row]) {
+    for (const char of rows[row]) {
       if (pieceCounter === col) {
         return char;
       }
@@ -84,7 +73,7 @@ const Board: React.FC<BoardProps> = ({
         ? Array.from({ length: 64 }, (_, i) => i)
         : Array.from({ length: 64 }, (_, i) => 63 - i);
 
-    for (let i of boardOrder) {
+    for (const i of boardOrder) {
       const rankFile = getRankFile(i);
 
       const isLight = (Math.floor(i / 8) + (i % 8)) % 2 === 0;
@@ -127,9 +116,11 @@ const Board: React.FC<BoardProps> = ({
             }}
           >
             {pieceImage ? (
-              <img
+              <Image
                 src={pieceImage}
                 alt={piece}
+                height={50}
+                width={50}
                 className="w-16 h-16 z-20"
                 style={{ width: squareSize, height: squareSize }}
               />
@@ -147,8 +138,10 @@ const Board: React.FC<BoardProps> = ({
           !isBrilliant &&
           !isGreat &&
           classificationData ? (
-            <img
+            <Image
               src={classificationData.emoji}
+              height={30}
+              width={30}
               alt="E"
               className="absolute z-50 h-7 top-0"
               style={{
@@ -312,7 +305,7 @@ const Board: React.FC<BoardProps> = ({
   };
 
   return (
-    <div ref={boardRef} className="grid grid-cols-8 gap-0 w-max relative">
+    <div ref={boardRef} className="grid grid-cols-8 gap-0 w-max h-max relative">
       {renderSquares()}
       <button
         className="absolute top-2 -right-8 cursor-pointer text-gray-400 hover:text-gray-300 hover:scale-110 transition-all"
