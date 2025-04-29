@@ -183,9 +183,7 @@ export default function Home() {
               type="submit"
               className="w-full cursor-pointer text-sm sm:text-base"
               disabled={
-                (inputType === "url" && !urlInputValue.trim()) ||
-                (inputType === "pgn" && !pgnInputValue.trim()) ||
-                loading
+                (inputType === "pgn" && !pgnInputValue.trim()) || loading
               }
             >
               {loading ? "Processing..." : "Analyze Game"}
