@@ -32,7 +32,7 @@ export default function Navbar() {
       if (window.innerWidth < 768) {
         setIsCollapsed(true);
       } else {
-        setIsCollapsed(false); // Ensure it's not collapsed on desktop by default
+        setIsCollapsed(true); // Ensure it's not collapsed on desktop by default
       }
     };
 

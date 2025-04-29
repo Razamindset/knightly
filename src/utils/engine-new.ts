@@ -15,12 +15,45 @@ export interface Line {
 export class Stockfish {
   depth = 0;
   private worker: Worker;
+  private ready: boolean = false;
+  private onReadyPromise: Promise<void>;
+  private resolveReady!: () => void;
 
   constructor() {
     console.log("A new worker was created");
     this.worker = new Worker("./stockfish-17-lite.js");
+
+    this.onReadyPromise = new Promise((resolve) => {
+      this.resolveReady = resolve;
+    });
+
+    this.initEngine();
+  }
+
+  private initEngine() {
     this.worker.postMessage("uci");
-    this.worker.postMessage("setoption name MultiPV value 2");
+
+    this.worker.addEventListener("message", (event: MessageEvent) => {
+      const message = event.data;
+
+      // Notify when engine is ready
+      if (message === "uciok" && !this.ready) {
+        this.ready = true;
+        this.worker.postMessage("setoption name MultiPV value 2");
+        this.resolveReady(); // Engine ready to use
+        console.log("Stockfish is ready.");
+      }
+    });
+
+    this.worker.addEventListener("error", () => {
+      this.worker.terminate();
+      this.worker = new Worker("./stockfish.js");
+      this.initEngine(); // Retry
+    });
+  }
+
+  async waitUntilReady() {
+    await this.onReadyPromise;
   }
 
   async evaluate(
@@ -28,6 +61,8 @@ export class Stockfish {
     targetDepth: number,
     verbose = false
   ): Promise<Line[]> {
+    await this.waitUntilReady(); // No evaluation until loading is successfull
+
     this.worker.postMessage("position fen " + fen);
     this.worker.postMessage("go depth " + targetDepth);
 
@@ -92,18 +127,6 @@ export class Stockfish {
           }
           resolve(lines);
         }
-      });
-
-      this.worker.addEventListener("error", () => {
-        // Terminate the current Stockfish, switch to Stockfish 11 as fallback engine
-        this.worker.terminate();
-        console.log("Loading an older version of stockfish");
-        this.worker = new Worker("./stockfish.js");
-
-        this.worker.postMessage("uci");
-        this.worker.postMessage("setoption name MultiPV value 2");
-
-        this.evaluate(fen, targetDepth, verbose).then(resolve);
       });
     });
   }

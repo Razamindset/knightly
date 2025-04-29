@@ -5,9 +5,10 @@ interface UserData {
   flag?: string;
   avatar?: string;
   rating?: string | "?"
+  title?: string
 }
 
-interface Position {
+export interface Position {
   opening?: string;
   san?: string;
   lan?: string;
@@ -27,7 +28,7 @@ export enum Classification {
   FORCED = "forced",
 }
 
-interface EvaluatedMove {
+export interface EvaluatedMove {
   san?: string;
   uci?: string;
 }
@@ -41,7 +42,7 @@ export interface EvaluatedPosition extends Position {
   worker: string;
 }
 
-interface Report {
+export interface Report {
   accuracies: {
     white: number;
     black: number;

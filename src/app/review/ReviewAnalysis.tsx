@@ -1,34 +1,36 @@
-import { EvaluatedPosition, Position, Report, UserData } from "@/types/api";
+import { EvaluatedPosition, Position, Report } from "@/types/api";
 import { Stockfish } from "@/utils/engine-new";
 import { useEffect, useRef, useState } from "react";
-import ReactCountryFlag from "react-country-flag";
-import ReviewLoading from "./ReviewLoading";
+import { Chess } from "chess.js";
+import StockfishLoader from "@/components/engine-loading";
+import ReviewReport from "./ReviewReport";
 
 /*
 Loops over each positions to get its evaluation
 shows a loading state until the evaluation is complete
 when the evalution is done mounts the ReviewBoard comp 
 */
-export default function ReviewGame({
+export default function ReviewAnalysis({
   positions,
-  gameOver,
-  whiteUserData,
-  blackUserData,
 }: {
   positions: Position[];
-  gameOver: boolean;
-  blackUserData: UserData;
-  whiteUserData: UserData;
 }) {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [progress, setProgress] = useState<number>(0);
+  const [isEngineReady, setIsEngineReady] = useState(false);
 
   const stockfish = useRef<Stockfish | null>(null);
 
-  // This one for loading the engine
+  //* This useEffect for loading the engine
   useEffect(() => {
-    stockfish.current = new Stockfish();
+    const engine = new Stockfish();
+    stockfish.current = engine;
+
+    //* Donot proceed until the engine is loaded sucessfully
+    engine.waitUntilReady().then(() => {
+      setIsEngineReady(true);
+    });
 
     return () => {
       if (stockfish.current) {
@@ -38,10 +40,8 @@ export default function ReviewGame({
     };
   }, []);
 
+  // Now we need to call the external api and get the game report
   async function fetchReport(allEvaluations: EvaluatedPosition[]) {
-    console.log("This function was called");
-
-    // Now we need to call the external api and get the game report
     try {
       const response = await fetch("/api/report", {
         method: "POST",
@@ -59,7 +59,8 @@ export default function ReviewGame({
       }
 
       const gameReport = await response.json();
-      setReport(gameReport.report.results);
+      const result = gameReport.report.results;
+      setReport(result);
     } catch (error) {
       console.error("Error during analysis or API call:", error);
     }
@@ -80,8 +81,9 @@ export default function ReviewGame({
         setProgress(Math.round(((i + 1) / totalMoves) * 100));
         const currentFen = positions[i].after;
 
+        const chess = new Chess(currentFen);
         // If it's the last move and the game is over, add a placeholder evaluation
-        if ((gameOver && i + 1 === totalMoves) || !currentFen) {
+        if ((chess.isGameOver() && i + 1 === totalMoves) || !currentFen) {
           calculatedEvaluations.push({
             move: { san: positions[i].san, uci: positions[i].lan },
             fen: currentFen,
@@ -93,6 +95,7 @@ export default function ReviewGame({
 
         try {
           const evaluation = await stockfish?.current?.evaluate(currentFen, 16);
+
           if (evaluation) {
             calculatedEvaluations.push({
               move: { san: positions[i].san, uci: positions[i].lan },
@@ -112,38 +115,20 @@ export default function ReviewGame({
           });
         }
       }
-      await fetchReport(calculatedEvaluations); // Call fetchReport once
+
+      await fetchReport(calculatedEvaluations);
       setLoading(false);
     };
 
     if (positions) {
-      setLoading(true); //start loading
+      setLoading(true);
       evaluateAndReport();
     }
-  }, [positions, gameOver]);
+  }, [positions]);
 
-  if (loading) {
-    return (
-      <ReviewLoading
-        blackUser={blackUserData}
-        progress={progress}
-        whiteUser={whiteUserData}
-      />
-    );
+  if (!isEngineReady) {
+    return <StockfishLoader />;
   }
 
-  return (
-    <div className="border w-full p-6">
-      <span>Progress: {progress}%</span>
-      <div>{JSON.stringify(report && report.classifications)}</div>
-      <div className="white">
-        {whiteUserData?.username}{" "}
-        <ReactCountryFlag countryCode={whiteUserData?.flag ?? "UN"} />
-      </div>
-      <div className="black">
-        {blackUserData?.username}{" "}
-        <ReactCountryFlag countryCode={blackUserData?.flag ?? "UN"} />
-      </div>
-    </div>
-  );
+  return <ReviewReport progress={progress} loading={loading} report={report} />;
 }

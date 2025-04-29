@@ -22,14 +22,6 @@ export default function Home() {
   const router = useRouter();
   const { setGameData } = useGameStore();
 
-  const validateChesscomUrl = (url: string): boolean => {
-    return /^https?:\/\/(www\.)?chess\.com\/game\/(live|daily)\/\d+/.test(url);
-  };
-
-  const validateLichessUrl = (url: string): boolean => {
-    return /^https?:\/\/(www\.)?lichess\.org\/([\w-]+)/.test(url);
-  };
-
   const validatePgn = (pgn: string): boolean => {
     try {
       const chess = new Chess();
@@ -47,18 +39,12 @@ export default function Home() {
     setLoading(true);
 
     let inputValueToSubmit = "";
+
+    //* Check data format
     if (inputType === "url") {
-      if (
-        !validateChesscomUrl(urlInputValue) &&
-        !validateLichessUrl(urlInputValue)
-      ) {
-        setError(
-          "Invalid URL. Please enter a valid Chess.com or Lichess game URL."
-        );
-        setLoading(false);
-        return;
-      }
-      inputValueToSubmit = urlInputValue;
+      setError("URl based imports are not available cause of technical errors");
+      setLoading(false);
+      return;
     } else {
       if (!validatePgn(pgnInputValue)) {
         setError("Invalid PGN format. Please check your PGN and try again.");
@@ -70,7 +56,7 @@ export default function Home() {
 
     try {
       setGameData({
-        type: inputType,
+        type: "pgn",
         value: inputValueToSubmit,
       });
 
@@ -119,23 +105,31 @@ export default function Home() {
           }}
         >
           <TabsList className="grid grid-cols-2 mb-4 cursor-pointer">
-            <TabsTrigger value="url" className="cursor-pointer text-sm sm:text-base">
+            <TabsTrigger
+              value="url"
+              className="cursor-pointer text-sm sm:text-base"
+            >
               Game URL
             </TabsTrigger>
-            <TabsTrigger value="pgn" className="cursor-pointer text-sm sm:text-base">
+            <TabsTrigger
+              value="pgn"
+              className="cursor-pointer text-sm sm:text-base"
+            >
               PGN
             </TabsTrigger>
           </TabsList>
 
+          {/* For some reason the lichess api fails in my browser so for now only pgn is availble */}
           <form onSubmit={handleSubmit} className="space-y-4 w-full">
             <TabsContent value="url" className="space-y-4 w-full">
               <Input
-                placeholder="Paste a Lichess or Chess.com game URL"
+                placeholder="URl imports are unavailable due to technical issues"
                 value={urlInputValue}
                 onChange={(e) => {
                   setUrlInputValue(e.target.value);
                   setError(null);
                 }}
+                disabled
                 className="w-full"
               />
               <div className="text-xs text-gray-500 sm:text-gray-400">
@@ -157,7 +151,9 @@ export default function Home() {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 sm:text-gray-400">Or</span>
+                <span className="text-sm text-gray-500 sm:text-gray-400">
+                  Or
+                </span>
                 <Button
                   type="button"
                   variant="outline"

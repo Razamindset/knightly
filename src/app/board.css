@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@keyframes moveToCornerAndDisappear {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  25% { /* Hold the icon a bit longer before text starts fading */
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  60% { /* Start moving the icon and fade out text */
+    transform: translate(50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(50%, -50%) scale(0.5);
+  }
+}
+
+.b-icon {
+  animation: moveToCornerAndDisappear 3s ease-in forwards;
+}
+
+.b-text {
+  animation: fadeOutText 3s ease-in forwards;
+}
+
+.g-icon {
+  animation: moveToCornerAndDisappear 2s ease-in forwards;
+}
+
+.g-text {
+  animation: fadeOutText 2s ease-in forwards;
+}
+
+
+@keyframes fadeOutText {
+  0% {
+    opacity: 1;
+  }
+  60% { /* Match when the icon starts moving */
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    display: none; /* Also make it disappear from the layout */
+  }
+}
