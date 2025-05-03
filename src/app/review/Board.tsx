@@ -117,6 +117,7 @@ const Board: React.FC<BoardProps> = ({
           >
             {pieceImage ? (
               <Image
+              key={piece}
                 src={pieceImage}
                 alt={piece}
                 height={50}

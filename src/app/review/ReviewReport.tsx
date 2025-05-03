@@ -2,9 +2,13 @@
 
 import type { Report } from "@/types/api";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Board from "./Board";
 import type { ClassificationConfig } from "./board-icons";
+import { classificationIcons } from "./board-icons";
+import { FaChessKnight } from "react-icons/fa6";
+import useChessSounds from "@/utils/useSound";
+import Image from "next/image";
 
 interface ReviewReportProps {
   progress: number;
@@ -22,6 +26,7 @@ export default function ReviewReport({
   const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
   const moveListRef = useRef<HTMLDivElement>(null);
   const currentMoveRef = useRef<HTMLDivElement>(null);
+  const { handleMoveSounds } = useChessSounds();
 
   const goToPreviousMove = () => {
     if (report && currentMoveIndex > 0) {
@@ -32,6 +37,10 @@ export default function ReviewReport({
   const goToNextMove = () => {
     if (report && currentMoveIndex < report.positions.length - 1) {
       setCurrentMoveIndex((prev) => prev + 1);
+      handleMoveSounds(
+        report.positions[currentMoveIndex + 1].move.san,
+        report.positions[currentMoveIndex].fen
+      );
     }
   };
 
@@ -43,7 +52,17 @@ export default function ReviewReport({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentMoveIndex, report]);
+  }, [currentMoveIndex, report, goToPreviousMove, goToNextMove]);
+
+  useEffect(() => {
+    if (currentMoveRef.current && moveListRef.current) {
+      currentMoveRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "start",
+      });
+    }
+  }, [currentMoveIndex]);
 
   const currentMove = report?.positions[currentMoveIndex];
 
@@ -64,23 +83,32 @@ export default function ReviewReport({
     <div className="flex flex-col lg:flex-row w-full gap-4 p-2 sm:p-4 h-full">
       {/* Chess Board */}
       <div className="w-full lg:w-1/2 flex justify-center">
-        <Board
-          fen={
-            loading && initialFen
-              ? initialFen
-              : currentMove?.fen ||
-                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        <Suspense
+          fallback={
+            <FaChessKnight
+              className="m-auto text-green-500 animate-pulse"
+              size={35}
+            />
           }
-          lastMove={{
-            from: currentMove?.move?.uci?.slice(0, 2) ?? "",
-            to: currentMove?.move?.uci?.slice(2, 4) ?? "",
-          }}
-          moveClassification={
-            (currentMove?.classification as keyof ClassificationConfig) ??
-            "null"
-          }
-          boardSize={500}
-        />
+        >
+          <Board
+            fen={
+              loading && initialFen
+                ? initialFen
+                : currentMove?.fen ||
+                  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            }
+            lastMove={{
+              from: currentMove?.move?.uci?.slice(0, 2) ?? "",
+              to: currentMove?.move?.uci?.slice(2, 4) ?? "",
+            }}
+            moveClassification={
+              (currentMove?.classification as keyof ClassificationConfig) ??
+              "null"
+            }
+            boardSize={500}
+          />
+        </Suspense>
       </div>
 
       {/* Right Panel */}
@@ -104,7 +132,7 @@ export default function ReviewReport({
         ) : report ? (
           <div className="flex flex-col-reverse md:flex-col bg-gray-800 rounded-md text-white w-full h-full">
             {/* Current Move Display */}
-            <div className="px-4 py-2 bg-gray-900 text-center text-lg font-semibold hidden md:block">
+            <div className="px-4 py-2 bg-gray-900 text-center text-lg font-semibold flex items-center justify-center gap-2">
               <span className={getSANClass(currentMove?.classification)}>
                 {currentMove?.move.san || "Start Position"}
               </span>
@@ -115,6 +143,31 @@ export default function ReviewReport({
                   "Error clasifying"}
                 )
               </span>
+              {classificationIcons[
+                currentMove?.classification as keyof ClassificationConfig
+              ]?.emoji && (
+                <Image
+                  src={
+                    classificationIcons[
+                      currentMove?.classification as keyof ClassificationConfig
+                    ]?.emoji
+                  }
+                  alt={currentMove?.classification || "Move"}
+                  className="h-6 w-6"
+                />
+              )}
+            </div>
+
+            <div className="report_data w-full p-4">
+              Accuracies
+              <div className="grid grid-cols-2 my-1">
+                <div className="text-white font-semibold">
+                  White: {report.accuracies.white.toFixed(2)}
+                </div>
+                <div className="text-black font-semibold">
+                  Black: {report.accuracies.black.toFixed(2)}
+                </div>
+              </div>
             </div>
 
             {/* Move Grid */}
@@ -125,11 +178,11 @@ export default function ReviewReport({
               {report.positions.map((pos, index) => (
                 <div
                   key={index}
-                  ref={index === currentMoveIndex ? currentMoveRef : null}
+                  ref={index === currentMoveIndex  ? currentMoveRef : null}
                   onClick={() => setCurrentMoveIndex(index)}
-                  className={
-                    `p-2 rounded-md cursor-pointer transition-colors text-center ${pos.opening === "Starting Position" && "hidden"}`
-                  }
+                  className={`p-2 rounded-md cursor-pointer transition-colors text-center ${
+                    pos.opening === "Starting Position" && "hidden"
+                  } ${currentMoveIndex == index && "bg-gray-500"}`}
                 >
                   <div className={getSANClass(pos.classification)}>
                     {pos.move.san}

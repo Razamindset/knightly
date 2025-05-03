@@ -73,7 +73,7 @@ export default function ReviewPage() {
     }
 
     loadGameData();
-  }, [gameData]);
+  }, [gameData, setWhiteUserData, setBlackUserData]);
 
   if (loading) {
     return (
