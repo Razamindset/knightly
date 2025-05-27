@@ -4,9 +4,7 @@ import type React from "react";
 
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FaChessKnight, FaUpload } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { Chess } from "chess.js";
@@ -14,9 +12,7 @@ import { useGameStore } from "@/utils/store";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
-  const [urlInputValue, setUrlInputValue] = useState("");
   const [pgnInputValue, setPgnInputValue] = useState("");
-  const [inputType, setInputType] = useState<"url" | "pgn">("pgn");
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -38,26 +34,17 @@ export default function Home() {
     setError(null);
     setLoading(true);
 
-    let inputValueToSubmit = "";
-
     //* Check data format
-    if (inputType === "url") {
-      setError("URl based imports are not available cause of technical errors");
+    if (!validatePgn(pgnInputValue)) {
+      setError("Invalid PGN format. Please check your PGN and try again.");
       setLoading(false);
       return;
-    } else {
-      if (!validatePgn(pgnInputValue)) {
-        setError("Invalid PGN format. Please check your PGN and try again.");
-        setLoading(false);
-        return;
-      }
-      inputValueToSubmit = pgnInputValue;
     }
 
     try {
       setGameData({
         type: "pgn",
-        value: inputValueToSubmit,
+        value: pgnInputValue,
       });
 
       router.push("/review");
@@ -79,7 +66,6 @@ export default function Home() {
     reader.onload = (event) => {
       const pgn = event.target?.result as string;
       setPgnInputValue(pgn);
-      setInputType("pgn");
       setError(null);
     };
     reader.readAsText(file);
@@ -92,104 +78,57 @@ export default function Home() {
           <FaChessKnight size={50} className="text-green-500 mx-auto" />
           <h1 className="text-3xl sm:text-4xl font-bold">Chess Review</h1>
           <p className="text-gray-500 sm:text-gray-400">
-            Analyze chess games from Lichess, Chess.com, or PGN files
+            Analyze chess games paste your pgn below
           </p>
         </div>
 
-        <Tabs
-          defaultValue="pgn"
-          className="w-full"
-          onValueChange={(value) => {
-            setInputType(value as "url" | "pgn");
-            setError(null);
-          }}
-        >
-          <TabsList className="grid grid-cols-2 mb-4 cursor-pointer">
-            <TabsTrigger
-              value="url"
-              className="cursor-pointer text-sm sm:text-base"
-            >
-              Game URL
-            </TabsTrigger>
-            <TabsTrigger
-              value="pgn"
-              className="cursor-pointer text-sm sm:text-base"
-            >
-              PGN
-            </TabsTrigger>
-          </TabsList>
-
-          {/* For some reason the lichess api fails in my browser so for now only pgn is availble */}
-          <form onSubmit={handleSubmit} className="space-y-4 w-full">
-            <TabsContent value="url" className="space-y-4 w-full">
-              <Input
-                placeholder="URl imports are unavailable due to technical issues"
-                value={urlInputValue}
-                onChange={(e) => {
-                  setUrlInputValue(e.target.value);
-                  setError(null);
-                }}
-                disabled
-                className="w-full"
-              />
-              <div className="text-xs text-gray-500 sm:text-gray-400">
-                Example: https://lichess.org/xxxxx or
-                https://chess.com/game/live/xxxxx
-              </div>
-            </TabsContent>
-
-            <TabsContent value="pgn" className="space-y-4 w-full">
-              <div className="w-full">
-                <Textarea
-                  placeholder="Paste PGN text here"
-                  value={pgnInputValue}
-                  onChange={(e) => {
-                    setPgnInputValue(e.target.value);
-                    setError(null);
-                  }}
-                  className="h-[150px] sm:h-[200px] w-full resize-none"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 sm:text-gray-400">
-                  Or
-                </span>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex items-center gap-2 cursor-pointer text-sm sm:text-base"
-                >
-                  <FaUpload size={14} />
-                  Upload PGN file
-                </Button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept=".pgn"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-              </div>
-            </TabsContent>
-
-            {error && (
-              <div className="p-3 bg-destructive/20 border border-destructive rounded-md text-destructive-foreground text-sm">
-                {error}
-              </div>
-            )}
-
+        {/* For some reason the lichess api fails in my browser so for now only pgn is availble */}
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
+          <div className="w-full">
+            <Textarea
+              placeholder="Paste PGN text here"
+              value={pgnInputValue}
+              onChange={(e) => {
+                setPgnInputValue(e.target.value);
+                setError(null);
+              }}
+              className="h-[150px] sm:h-[200px] w-full resize-none"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500 sm:text-gray-400">Or</span>
             <Button
-              type="submit"
-              className="w-full cursor-pointer text-sm sm:text-base"
-              disabled={
-                (inputType === "pgn" && !pgnInputValue.trim()) || loading
-              }
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 cursor-pointer text-sm sm:text-base"
             >
-              {loading ? "Processing..." : "Analyze Game"}
+              <FaUpload size={14} />
+              Upload PGN file
             </Button>
-          </form>
-        </Tabs>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".pgn"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </div>
+
+          {error && (
+            <div className="p-3 bg-destructive/20 border border-destructive rounded-md text-destructive-foreground text-sm">
+              {error}
+            </div>
+          )}
+
+          <Button
+            type="submit"
+            className="w-full cursor-pointer text-sm sm:text-base"
+            disabled={!pgnInputValue.trim() || loading}
+          >
+            {loading ? "Processing..." : "Analyze Game"}
+          </Button>
+        </form>
       </div>
     </main>
   );

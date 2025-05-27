@@ -117,7 +117,7 @@ const Board: React.FC<BoardProps> = ({
           >
             {pieceImage ? (
               <Image
-              key={piece}
+                key={piece}
                 src={pieceImage}
                 alt={piece}
                 height={50}
@@ -306,7 +306,13 @@ const Board: React.FC<BoardProps> = ({
   };
 
   return (
-    <div ref={boardRef} className="grid grid-cols-8 gap-0 w-max h-max relative">
+    <div
+      ref={boardRef}
+      className="grid grid-cols-8 gap-0 w-max h-max relative"
+      onContextMenu={(e) => {
+        e.preventDefault();
+      }}
+    >
       {renderSquares()}
       <button
         className="absolute top-2 -right-8 cursor-pointer text-gray-400 hover:text-gray-300 hover:scale-110 transition-all"
