@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import StockfishLoader from "@/components/engine-loading";
 import ReviewReport from "./ReviewReport";
+import ImagePreloader from "@/components/image-preloader";
 
 /*
 Loops over each positions to get its evaluation
@@ -131,5 +132,10 @@ export default function ReviewAnalysis({
     return <StockfishLoader />;
   }
 
-  return <ReviewReport progress={progress} loading={loading} report={report} initialFen={positions[0].after} />;
+  return (
+    <>
+      <ImagePreloader />
+      <ReviewReport progress={progress} loading={loading} report={report} initialFen={positions[0].after} />
+    </>
+  );
 }
