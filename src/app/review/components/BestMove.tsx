@@ -14,7 +14,7 @@ export default function BestMove({ currentMove }: BestMoveProps) {
   return (
     <div className="p-4 bg-gray-700 rounded-md mb-4">
       <h4 className="text-lg font-semibold mb-2">Best Move</h4>
-      <p className="text-green-400">{bestMove.moveUCI} (CP: {bestMove.cp})</p>
+      <p className="text-green-400">{bestMove.moveUCI} (CP: {bestMove.evaluation.value})</p>
     </div>
   );
 }

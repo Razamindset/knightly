@@ -48,9 +48,6 @@ const ChessgroundBoard: React.FC<ChessgroundBoardProps> = ({
           eraseOnClick: false,
         },
       });
-
-      previousFen.current = fen;
-      previousLastMove.current = lastMove || '';
     }
 
     return () => {
@@ -66,7 +63,7 @@ const ChessgroundBoard: React.FC<ChessgroundBoardProps> = ({
     if (!cgApi.current) return;
 
     const hasPositionChanged = previousFen.current !== fen;
-    const hasMoveChanged = previousLastMove.current !== lastMove;
+    const hasMoveChanged = previousLastMove.current !== lastMove;    
 
     if (hasPositionChanged || hasMoveChanged) {
       // Clear previous arrows
