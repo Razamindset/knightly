@@ -3,7 +3,7 @@ import { Chess } from "chess.js";
 
 const useChessSounds = () => {
   const chess = useMemo(() => new Chess(), []);
-  const sounds: Record<string, HTMLAudioElement> = {
+  const sounds = useMemo(() => ({
     movePiece: new Audio("/assets/sounds/move.mp3"),
     capturePiece: new Audio("/assets/sounds/capture.mp3"),
     check: new Audio("/assets/sounds/check.mp3"),
@@ -11,13 +11,13 @@ const useChessSounds = () => {
     promote: new Audio("/assets/sounds/promote.mp3"),
     gameStart: new Audio("/assets/sounds/ping.mp3"),
     gameEnd: new Audio("/assets/sounds/game_end.mp3"),
-  };
+  }), []);
 
   useEffect(() => {
     Object.values(sounds).forEach((sound) => {
       sound.load();
     });
-  }, []);
+  }, [sounds]);
 
   const playSound = useCallback((soundName: keyof typeof sounds) => {
     const sound = sounds[soundName];
@@ -29,7 +29,7 @@ const useChessSounds = () => {
     } else {
       console.error(`Sound "${soundName}" not found.`);
     }
-  }, []);
+  }, [sounds]);
 
   const handleMoveSounds = useCallback(
     (currMove: string | undefined, fen: string | undefined) => {

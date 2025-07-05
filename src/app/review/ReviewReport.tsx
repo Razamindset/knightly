@@ -2,8 +2,8 @@
 
 import type { Report } from "@/types/api"
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
-import { useState, useEffect, useRef, Suspense } from "react"
-import ChessgroundBoard from "@/components/Board/ChessgroundBoard"
+import { useState, useEffect, useRef, Suspense, useCallback } from "react"
+import ChessgroundBoard from "@/components/Board/ChessgroundBoard";
 import type { ClassificationConfig } from "./board-icons"
 import { classificationIcons } from "./board-icons"
 import { FaChessKnight } from "react-icons/fa6"
@@ -19,23 +19,23 @@ interface ReviewReportProps {
 
 export default function ReviewReport({ progress, loading, initialFen, report }: ReviewReportProps) {
   const [currentMoveIndex, setCurrentMoveIndex] = useState(0)
-  const [userArrows, setUserArrows] = useState<Array<{ from: string; to: string }>>([])
   const moveListRef = useRef<HTMLDivElement>(null)
   const currentMoveRef = useRef<HTMLDivElement>(null)
   const { handleMoveSounds } = useChessSounds()
 
-  const goToPreviousMove = () => {
+
+  const goToPreviousMove = useCallback(() => {
     if (report && currentMoveIndex > 0) {
       setCurrentMoveIndex((prev) => prev - 1)
     }
-  }
+  }, [report, currentMoveIndex])
 
-  const goToNextMove = () => {
+  const goToNextMove = useCallback(() => {
     if (report && currentMoveIndex < report.positions.length - 1) {
       setCurrentMoveIndex((prev) => prev + 1)
       handleMoveSounds(report.positions[currentMoveIndex + 1].move.san, report.positions[currentMoveIndex].fen)
     }
-  }
+  }, [report, currentMoveIndex, handleMoveSounds])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -45,7 +45,7 @@ export default function ReviewReport({ progress, loading, initialFen, report }: 
 
     window.addEventListener("keydown", handleKeyDown)
     return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [currentMoveIndex, report])
+  }, [goToPreviousMove, goToNextMove])
 
   useEffect(() => {
     if (currentMoveRef.current && moveListRef.current) {
@@ -57,13 +57,7 @@ export default function ReviewReport({ progress, loading, initialFen, report }: 
     }
   }, [currentMoveIndex])
 
-  // Clear user arrows when move changes
-  useEffect(() => {
-    setUserArrows([])
-  }, [currentMoveIndex])
-
   const currentMove = report?.positions[currentMoveIndex]
-  const previousMove = currentMoveIndex > 0 ? report?.positions[currentMoveIndex - 1] : null
 
   const getSANClass = (classification: string | undefined) => {
     switch (classification?.toLowerCase()) {
@@ -132,6 +126,8 @@ export default function ReviewReport({ progress, loading, initialFen, report }: 
                   alt={currentMove?.classification || "Move"}
                   className="h-6 w-6"
                   loading="eager"
+                  width={50}
+                  height={50}
                 />
               )}
             </div>
@@ -142,15 +138,6 @@ export default function ReviewReport({ progress, loading, initialFen, report }: 
                 <div className="text-white font-semibold">White: {report.accuracies.white.toFixed(2)}</div>
                 <div className="text-black font-semibold">Black: {report.accuracies.black.toFixed(2)}</div>
               </div>
-              {/* User drawn arrows info */}
-              {userArrows.length > 0 && (
-                <div className="mt-2 text-sm text-gray-400">
-                  <p>Your arrows: {userArrows.length}</p>
-                  <button onClick={() => setUserArrows([])} className="text-blue-400 hover:text-blue-300 text-xs">
-                    Clear arrows
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* Move Grid */}

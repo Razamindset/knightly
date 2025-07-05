@@ -59,7 +59,7 @@ const ChessgroundBoard: React.FC<ChessgroundBoardProps> = ({
         cgApi.current = null;
       }
     };
-  }, []); // Only run once on mount
+  }, [fen, lastMove, orientation]); // Only run once on mount
 
   // Update board position and animations
   useEffect(() => {
@@ -99,7 +99,7 @@ const ChessgroundBoard: React.FC<ChessgroundBoardProps> = ({
       previousFen.current = fen;
       previousLastMove.current = lastMove || '';
     }
-  }, [fen, lastMove, uciToMove]);
+  }, [fen, lastMove, uciToMove, orientation]);
 
   // Handle best move arrow
   useEffect(() => {
