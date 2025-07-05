@@ -46,12 +46,6 @@ const ChessgroundBoard: React.FC<ChessgroundBoardProps> = ({
           enabled: true,
           visible: true,
           eraseOnClick: false,
-          brushes: {
-            green: { key: 'g', color: '#15781B', opacity: 1, lineWidth: 10 },
-            red: { key: 'r', color: '#882020', opacity: 1, lineWidth: 10 },
-            blue: { key: 'b', color: '#003088', opacity: 1, lineWidth: 10 },
-            yellow: { key: 'y', color: '#e68f00', opacity: 1, lineWidth: 10 },
-          },
         },
       });
 

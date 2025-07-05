@@ -4,13 +4,13 @@ import { Chess } from "chess.js";
 const useChessSounds = () => {
   const chess = useMemo(() => new Chess(), []);
   const sounds: Record<string, HTMLAudioElement> = {
-    movePiece: new Audio("/sounds/move.mp3"),
-    capturePiece: new Audio("/sounds/capture.mp3"),
-    check: new Audio("/sounds/check.mp3"),
-    castle: new Audio("/sounds/castle.mp3"),
-    promote: new Audio("/sounds/promote.mp3"),
-    gameStart: new Audio("/sounds/ping.mp3"),
-    gameEnd: new Audio("/sounds/game_end.mp3"),
+    movePiece: new Audio("/assets/sounds/move.mp3"),
+    capturePiece: new Audio("/assets/sounds/capture.mp3"),
+    check: new Audio("/assets/sounds/check.mp3"),
+    castle: new Audio("/assets/sounds/castle.mp3"),
+    promote: new Audio("/assets/sounds/promote.mp3"),
+    gameStart: new Audio("/assets/sounds/ping.mp3"),
+    gameEnd: new Audio("/assets/sounds/game_end.mp3"),
   };
 
   useEffect(() => {
