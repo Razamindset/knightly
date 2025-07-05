@@ -3,7 +3,7 @@
 import type { Report } from "@/types/api";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef, Suspense } from "react";
-import Board from "./Board";
+import ChessgroundBoard from "@/components/Board/ChessgroundBoard";
 import type { ClassificationConfig } from "./board-icons";
 import { classificationIcons } from "./board-icons";
 import { FaChessKnight } from "react-icons/fa6";
@@ -91,22 +91,15 @@ export default function ReviewReport({
             />
           }
         >
-          <Board
+          <ChessgroundBoard
             fen={
               loading && initialFen
                 ? initialFen
                 : currentMove?.fen ||
                   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             }
-            lastMove={{
-              from: currentMove?.move?.uci?.slice(0, 2) ?? "",
-              to: currentMove?.move?.uci?.slice(2, 4) ?? "",
-            }}
-            moveClassification={
-              (currentMove?.classification as keyof ClassificationConfig) ??
-              "null"
-            }
-            boardSize={500}
+            orientation="white" // Defaulting to white for now
+            bestMoveArrow={currentMove?.topLines?.[0]?.moveUCI}
           />
         </Suspense>
       </div>
@@ -154,6 +147,7 @@ export default function ReviewReport({
                   }
                   alt={currentMove?.classification || "Move"}
                   className="h-6 w-6"
+                  loading="eager"
                 />
               )}
             </div>

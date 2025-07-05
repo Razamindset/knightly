@@ -2,6 +2,14 @@ import { EvaluatedPosition } from "@/types/api";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
+  const origin = request.headers.get('origin');
+  const host = request.headers.get('host');
+
+  // Allow requests from the same host (your site) or during development
+  if (process.env.NODE_ENV === 'production' && origin !== `https://${host}`) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   try {
     const evaluations: EvaluatedPosition[] = await request.json();
 

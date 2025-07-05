@@ -9,7 +9,7 @@ import { SiGithub } from "react-icons/si";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "./ui/toggle-theme";
+import { ModeToggle } from "../ui/toggle-theme";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { MdMenu } from "react-icons/md";
 

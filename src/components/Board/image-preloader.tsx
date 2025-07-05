@@ -1,13 +1,13 @@
-import Image from 'next/image';
-import { classificationIcons } from '@/app/review/board-icons';
+import Image from "next/image";
+import { classificationIcons } from "@/app/review/board-icons";
 
 const ImagePreloader = () => {
   return (
-    <div style={{ display: 'none' }}>
+    <div style={{ display: "none" }}>
       {/* Preload classification icons */}
-      {Object.values(classificationIcons).map((icon, index) => (
+      {Object.values(classificationIcons).map((icon, index) =>
         // Check if icon.emoji is a string (for the 'null' case) or StaticImageData
-        typeof icon.emoji === 'string' ? null : (
+        typeof icon.emoji === "string" ? null : (
           <Image
             key={`classification-${index}`}
             src={icon.emoji}
@@ -17,7 +17,7 @@ const ImagePreloader = () => {
             priority={true}
           />
         )
-      ))}
+      )}
     </div>
   );
 };
